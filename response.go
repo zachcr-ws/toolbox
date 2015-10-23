@@ -1,36 +1,34 @@
 package common
 
-import ()
-
-type CommonHead struct {
+type Head struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
 }
 
-type CommonJsonResponse struct {
-	CommonHead
+type JsonResp struct {
+	Head
 	Data interface{} `json:"data,omitempty"`
 }
 
-func (c *CommonJsonResponse) Err(code int, msg string) {
-	c.CommonHead.Code = code
-	c.CommonHead.Msg = msg
+func (c *JsonResp) Err(code int, msg string) {
+	c.Head.Code = code
+	c.Head.Msg = msg
 }
-func GenErrResponse(code int, msg string) *CommonHead {
-	data := &CommonHead{
+func ErrResp(code int, msg string) *Head {
+	data := &Head{
 		Code: code,
 		Msg:  msg,
 	}
 	return data
 }
 
-func GenResponse(code int, msg string, data interface{}) *CommonJsonResponse {
-	ch := CommonHead{
+func Resp(code int, msg string, data interface{}) *JsonResp {
+	ch := Head{
 		Code: code,
 		Msg:  msg,
 	}
-	result := new(CommonJsonResponse)
-	result.CommonHead = ch
+	result := new(JsonResp)
+	result.Head = ch
 	result.Data = data
 	return result
-
+}
