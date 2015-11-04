@@ -51,7 +51,7 @@ func ConnectMysql(master bool) *sql.DB {
 
 	db, err := sql.Open("mysql", user+":"+pswd+"@tcp("+addr+")/"+name+"?charset=utf8")
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	return db
 }
