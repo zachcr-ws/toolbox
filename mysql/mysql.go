@@ -101,18 +101,6 @@ func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
 	return orm.SetTable(q.Table).Save(data)
 }
 
-func (q *MysqlQuery) SaveBatch(data interface{}) error {
-	orm := beedb.New(MasterDB)
-
-	for i := 0; i < len(data); i++ {
-		err := orm.SetTable(q.Table).Save(data[i])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (q *MysqlQuery) Delete(data interface{}, newOrm bool) (int64, error) {
 	db := MasterDB
 	if newOrm {
