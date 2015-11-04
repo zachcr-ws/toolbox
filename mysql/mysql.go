@@ -77,7 +77,7 @@ func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
 	if q.Fields == "" {
 		q.Fields = "*"
 	}
-	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Select(q.Fields).Find(result)
+	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).Find(result)
 }
 
 func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
@@ -91,7 +91,7 @@ func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
 	if q.Fields == "" {
 		q.Fields = "*"
 	}
-	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Select(q.Fields).FindAll(result)
+	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).FindAll(result)
 }
 
 func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
@@ -112,7 +112,7 @@ func (q *MysqlQuery) Delete(data interface{}, newOrm bool) (int64, error) {
 		defer db.Close()
 	}
 	orm := beedb.New(db)
-	err := orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Find(data)
+	err := orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Find(data)
 	if err != nil {
 		return int64(0), err
 	}
