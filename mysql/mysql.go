@@ -101,7 +101,7 @@ func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
 	return orm.SetTable(q.Table).Save(data)
 }
 
-func (q *MysqlQuery) SaveBatch(data []interface{}) error {
+func (q *MysqlQuery) SaveBatch(data interface{}) error {
 	orm := beedb.New(MasterDB)
 
 	for i := 0; i < len(data); i++ {
