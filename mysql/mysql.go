@@ -44,7 +44,7 @@ func ConnectMysql(master bool) *sql.DB {
 	addr := Config.MasterAddress
 	user := Config.User
 	name := Config.DbName
-	password := Config.Password
+	pswd := Config.Password
 	if !master {
 		addr = Config.SlaveAddress
 	}
