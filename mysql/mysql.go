@@ -72,6 +72,9 @@ func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
 	}
 
 	orm := beedb.New(db)
+	if q.Fields == "" {
+		q.Fields = "*"
+	}
 	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Select(q.Fields).Find(result)
 }
 
@@ -82,6 +85,9 @@ func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
 	}
 
 	orm := beedb.New(db)
+	if q.Fields == "" {
+		q.Fields = "*"
+	}
 	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Select(q.Fields).FindAll(result)
 }
 
@@ -113,7 +119,6 @@ func (q *MysqlQuery) Delete(data interface{}, newOrm bool) (int64, error) {
 		db = ConnectMysql(true)
 	}
 	orm := beedb.New(db)
-
 	err := orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Find(data)
 	if err != nil {
 		return int64(0), err
