@@ -60,6 +60,7 @@ func (q *MysqlQuery) Exec(newOrm bool, query string, args ...interface{}) (sql.R
 	db := SlaveDb
 	if newOrm {
 		db = ConnectMysql(false)
+		defer db.Close()
 	}
 	orm := beedb.New(db)
 	return orm.Exec(query, args...)
@@ -69,6 +70,7 @@ func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
 	db := SlaveDb
 	if newOrm {
 		db = ConnectMysql(false)
+		defer db.Close()
 	}
 
 	orm := beedb.New(db)
@@ -82,6 +84,7 @@ func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
 	db := SlaveDb
 	if newOrm {
 		db = ConnectMysql(false)
+		defer db.Close()
 	}
 
 	orm := beedb.New(db)
@@ -95,6 +98,7 @@ func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
 	db := MasterDB
 	if newOrm {
 		db = ConnectMysql(true)
+		defer db.Close()
 	}
 
 	orm := beedb.New(db)
@@ -105,6 +109,7 @@ func (q *MysqlQuery) Delete(data interface{}, newOrm bool) (int64, error) {
 	db := MasterDB
 	if newOrm {
 		db = ConnectMysql(true)
+		defer db.Close()
 	}
 	orm := beedb.New(db)
 	err := orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Offset, q.Size).Find(data)
