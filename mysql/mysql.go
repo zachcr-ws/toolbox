@@ -105,16 +105,12 @@ func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
 	return orm.SetTable(q.Table).Save(data)
 }
 
-func (q *MysqlQuery) Delete(data interface{}, newOrm bool) (int64, error) {
+func (q *MysqlQuery) Delete(newOrm bool) (int64, error) {
 	db := MasterDB
 	if newOrm {
 		db = ConnectMysql(true)
 		defer db.Close()
 	}
 	orm := beedb.New(db)
-	err := orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Find(data)
-	if err != nil {
-		return int64(0), err
-	}
-	return orm.SetTable(q.Table).Delete(data)
+	return orm.SetTable(q.Table).Where(q.Where).DeleteRow()
 }
