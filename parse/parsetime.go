@@ -17,7 +17,8 @@ func NowDate() string {
 }
 
 func Date2Unix(date, format string) int64 {
-	t, _ := time.Parse(format, date)
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	t, _ := time.ParseInLocation(format, date, loc)
 	return t.Unix()
 }
 
