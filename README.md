@@ -1,6 +1,5 @@
 # Common (Golang)
 
-----
 
 ### Code
 
