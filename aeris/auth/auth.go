@@ -45,7 +45,7 @@ func (this *AuthClient) Verify(token string, key []byte) error {
 	return err
 }
 
-func (this *AuthClient) Produce(day int) (token string, key string, err error) {
+func (this *AuthClient) Produce() (token string, key string, err error) {
 
 	jwtObj := jwt.New(jwt.SigningMethodHS256)
 	jwtObj.Claims["exp"] = time.Now().Add(time.Hour * 24 * this.ExpDay)
