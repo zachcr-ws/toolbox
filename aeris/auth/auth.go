@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"math/rand"
 	"strconv"
@@ -10,15 +11,27 @@ import (
 type AuthClient struct {
 	Username string
 	Password string
-	ExpDay   int
+	ExpDay   time.Duration
 }
 
-func New(username, password string, day int) *AuthClient {
+func New(username, password string, day time.Duration) *AuthClient {
 	return &AuthClient{
 		Username: username,
 		Password: password,
 		ExpDay:   day,
 	}
+}
+
+func Verify(token string, key []byte) error {
+	_, err := jwt.Parse(token, func(tokenObj *jwt.Token) (interface{}, error) {
+		if _, ok := tokenObj.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", tokenObj.Header["alg"])
+		}
+
+		return key, nil
+	})
+
+	return err
 }
 
 func (this *AuthClient) Key(l int) []byte {
@@ -33,22 +46,10 @@ func (this *AuthClient) Key(l int) []byte {
 	return resul
 }
 
-func (this *AuthClient) Verify(token string, key []byte) error {
-	tokenObj, err := jwt.Parse(token, func(tokenObj *jwt.Token) (interface{}, error) {
-		if _, ok := tokenObj.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", tokenObj.Header["alg"])
-		}
-
-		return key, nil
-	})
-
-	return err
-}
-
-func (this *AuthClient) Produce() (token string, key string, err error) {
+func (this *AuthClient) Produce() (token string, key []byte, err error) {
 
 	jwtObj := jwt.New(jwt.SigningMethodHS256)
-	jwtObj.Claims["exp"] = time.Now().Add(time.Hour * 24 * this.ExpDay)
+	jwtObj.Claims["exp"] = time.Now().Add(this.ExpDay)
 	jwtObj.Claims["aeris"] = strconv.Itoa(int(time.Now().UnixNano())) + this.Username
 
 	key = this.Key(16)
