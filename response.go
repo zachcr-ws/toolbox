@@ -14,6 +14,7 @@ func (c *JsonResp) Err(code int, msg string) {
 	c.Head.Code = code
 	c.Head.Msg = msg
 }
+
 func ErrResp(code int, msg string) *Head {
 	data := &Head{
 		Code: code,

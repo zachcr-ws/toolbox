@@ -1,10 +1,12 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -14,12 +16,31 @@ type AuthClient struct {
 	ExpDay   time.Duration
 }
 
+type TokenMid struct {
+	Aeris string `json:"aeris"`
+	Exp   string `json:"exp"`
+}
+
 func New(username, password string, day time.Duration) *AuthClient {
 	return &AuthClient{
 		Username: username,
 		Password: password,
 		ExpDay:   day,
 	}
+}
+
+func GetUsernameFromToken(token string) ([]byte, error) {
+	tarr := strings.Split(token, ".")
+	if len(tarr) != 3 {
+		return []byte{}, errors.New("Invalid token.")
+	}
+
+	bt, err := jwt.DecodeSegment(tarr[1])
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return bt, nil
 }
 
 func Verify(token string, key []byte) error {
