@@ -53,6 +53,8 @@ func ConnectMysql(master bool) *sql.DB {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	db.SetMaxIdleConns(1000)
+	db.SetMaxOpenConns(2000)
 	return db
 }
 
