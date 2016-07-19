@@ -1,11 +1,21 @@
 package mongo
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"gopkg.in/mgo.v2"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var Seesion map[string]*mgo.Session
+
+func MgoGeneratorId(r string) string {
+	ctx := md5.New()
+	st := strconv.FormatInt(time.Now().UnixNano(), 16)
+	return hex.EncodeToString(ctx.Sum([]byte(st + r)))
+}
 
 func GetSession(hosts string, user string, password string, db string) (*mgo.Session, error) {
 	if Seesion == nil {
