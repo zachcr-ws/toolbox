@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"github.com/astaxie/beedb"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 )
@@ -40,16 +41,25 @@ type MysqlQuery struct {
 	Where   string
 }
 
+// type MysqlTransaction struct {
+// }
+
 func ConnectMysql(master bool) *sql.DB {
 	addr := Config.MasterAddress
 	user := Config.User
 	name := Config.DbName
 	pswd := Config.Password
+	dbtype := "master"
 	if !master {
 		addr = Config.SlaveAddress
+		dbtype = "slave"
 	}
-
-	db, err := sql.Open("mysql", user+":"+pswd+"@tcp("+addr+")/"+name+"?charset=utf8")
+	conn := user + ":" + pswd + "@tcp(" + addr + ")/" + name + "?charset=utf8"
+	err := orm.RegisterDataBase(dbtype, "mysql", conn)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	db, err := orm.GetDB(dbtype)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -74,8 +84,8 @@ func (q *MysqlQuery) Exec(newOrm bool, query string, args ...interface{}) (sql.R
 		db = ConnectMysql(false)
 		defer db.Close()
 	}
-	orm := beedb.New(db)
-	return orm.Exec(query, args...)
+	dbmodel := beedb.New(db)
+	return dbmodel.Exec(query, args...)
 }
 
 func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
@@ -84,12 +94,12 @@ func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
 		db = ConnectMysql(false)
 		defer db.Close()
 	}
-
-	orm := beedb.New(db)
+	log.Println(db.Stats())
+	dbmodel := beedb.New(db)
 	if q.Fields == "" {
 		q.Fields = "*"
 	}
-	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).Find(result)
+	return dbmodel.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).Find(result)
 }
 
 func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
@@ -99,11 +109,11 @@ func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
 		defer db.Close()
 	}
 
-	orm := beedb.New(db)
+	dbmodel := beedb.New(db)
 	if q.Fields == "" {
 		q.Fields = "*"
 	}
-	return orm.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).FindAll(result)
+	return dbmodel.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).FindAll(result)
 }
 
 func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
@@ -113,8 +123,8 @@ func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
 		defer db.Close()
 	}
 
-	orm := beedb.New(db)
-	return orm.SetTable(q.Table).Save(data)
+	dbmodel := beedb.New(db)
+	return dbmodel.SetTable(q.Table).Save(data)
 }
 
 func (q *MysqlQuery) Delete(newOrm bool) (int64, error) {
@@ -123,6 +133,36 @@ func (q *MysqlQuery) Delete(newOrm bool) (int64, error) {
 		db = ConnectMysql(true)
 		defer db.Close()
 	}
-	orm := beedb.New(db)
-	return orm.SetTable(q.Table).Where(q.Where).DeleteRow()
+	dbmodel := beedb.New(db)
+	return dbmodel.SetTable(q.Table).Where(q.Where).DeleteRow()
+}
+
+// @Title Tarn
+// @Description exec sql by transaction
+// @Param    sql1, sql2, sql3...
+// @Success true, nil
+// @Failure false, error
+func (q *MysqlQuery) Tarn(sql ...string) (bool, error) {
+	tran := orm.NewOrm()
+	tran.Begin()
+	var (
+		Err  error
+		Flag bool
+	)
+	for _, v := range sql {
+		_, err := tran.Raw(v).Exec()
+		if err != nil {
+			Flag = false
+			Err = err
+			goto RESULT
+			break
+		}
+	}
+	tran.Commit()
+	Flag = true
+	return Flag, Err
+RESULT:
+	tran.Rollback()
+	return Flag, Err
+
 }
