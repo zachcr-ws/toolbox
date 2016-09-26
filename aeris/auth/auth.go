@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pquerna/ffjson/ffjson"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -19,6 +20,51 @@ type AuthClient struct {
 type TokenMid struct {
 	Aeris string `json:"aeris"`
 	Exp   string `json:"exp"`
+}
+
+type TokenData struct {
+	Aeris string `json:"aeris"`
+	Exp   string `json:"exp"`
+}
+
+func GetAccessToken(auth string) (token string, err error) {
+	at := strings.Split(auth, " ")
+	if len(at) != 2 {
+		err = errors.New("Invalid access_token")
+		return
+	}
+	return at[1], nil
+}
+
+func GetUsername(authorization string) (username, token string, err error) {
+
+	var data TokenData
+	var dataSp []string
+	var body []byte
+
+	token, err = GetAccessToken(authorization)
+	if err != nil {
+		return
+	}
+
+	body, err = GetUsernameFromToken(token)
+	if err != nil {
+		return
+	}
+
+	err = ffjson.Unmarshal(body, &data)
+	if err != nil {
+		return
+	}
+
+	dataSp = strings.Split(data.Aeris, "+")
+	if len(dataSp) != 2 {
+		err = errors.New("username errror.")
+		return
+	}
+
+	username = "+" + dataSp[1]
+	return
 }
 
 func New(username, password string, day time.Duration) *AuthClient {
