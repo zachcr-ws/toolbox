@@ -115,9 +115,10 @@ func (this *AuthClient) Key(l int) []byte {
 
 func (this *AuthClient) Produce() (token string, key []byte, err error) {
 
-	jwtObj := jwt.New(jwt.SigningMethodHS256)
-	jwtObj.Claims["exp"] = time.Now().Add(this.ExpDay)
-	jwtObj.Claims["aeris"] = strconv.Itoa(int(time.Now().UnixNano())) + this.Username
+	jwtObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp":   time.Now().Add(this.ExpDay),
+		"aeris": strconv.Itoa(int(time.Now().UnixNano())) + this.Username,
+	})
 
 	key = this.Key(16)
 	token, err = jwtObj.SignedString(key)
