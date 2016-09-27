@@ -91,7 +91,7 @@ func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
 		db = ConnectMysql(false)
 		defer db.Close()
 	}
-	log.Println(db.Stats())
+
 	dbmodel := beedb.New(db)
 	if q.Fields == "" {
 		q.Fields = "*"
