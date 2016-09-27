@@ -41,9 +41,6 @@ type MysqlQuery struct {
 	Where   string
 }
 
-// type MysqlTransaction struct {
-// }
-
 func ConnectMysql(master bool) *sql.DB {
 	addr := Config.MasterAddress
 	user := Config.User
@@ -155,7 +152,6 @@ func (q *MysqlQuery) Tarn(sql ...string) (bool, error) {
 			Flag = false
 			Err = err
 			goto RESULT
-			break
 		}
 	}
 	tran.Commit()
