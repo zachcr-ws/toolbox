@@ -58,6 +58,16 @@ func ConnectMysql(master bool) *sql.DB {
 	return db
 }
 
+func SetMasterConns(idle, open int) {
+	MasterDB.SetMaxIdleConns(idle)
+	MasterDB.SetMaxOpenConns(open)
+}
+
+func SetSlaveConns(idle, open int) {
+	SlaveDb.SetMaxIdleConns(idle)
+	SlaveDb.SetMaxOpenConns(open)
+}
+
 func (q *MysqlQuery) Exec(newOrm bool, query string, args ...interface{}) (sql.Result, error) {
 	db := SlaveDb
 	if newOrm {
