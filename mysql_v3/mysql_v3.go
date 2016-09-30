@@ -1,4 +1,4 @@
-package mysql_v3
+package mysql
 
 import (
 	"database/sql"
@@ -8,17 +8,19 @@ import (
 	"log"
 )
 
+var MasterDB *sql.DB
+var SlaveDb *sql.DB
 var Config MysqlConfig
 
-func InitMysqlConfig(master, slave, user, password, name string, idle, open int) {
+func InitMysqlConfig(master, slave, user, password, name string) {
 	Config.MasterAddress = master
 	Config.SlaveAddress = slave
 	Config.User = user
 	Config.Password = password
 	Config.DbName = name
 
-	ConnectMysql(true)
-	ConnectMysql(false)
+	MasterDB = ConnectMysql(true)
+	SlaveDb = ConnectMysql(false)
 }
 
 type MysqlConfig struct {
@@ -27,8 +29,6 @@ type MysqlConfig struct {
 	User          string
 	Password      string
 	DbName        string
-	IdleConns     int
-	OpenConns     int
 }
 
 type MysqlQuery struct {
@@ -41,7 +41,7 @@ type MysqlQuery struct {
 	Where   string
 }
 
-func ConnectMysql(master bool) {
+func ConnectMysql(master bool) *sql.DB {
 	addr := Config.MasterAddress
 	user := Config.User
 	name := Config.DbName
@@ -56,27 +56,41 @@ func ConnectMysql(master bool) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	orm.SetMaxIdleConns(dbtype, Config.IdleConns)
-	orm.SetMaxOpenConns(dbtype, Config.OpenConns)
+	db, err := orm.GetDB(dbtype)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	db.SetMaxIdleConns(1000)
+	db.SetMaxOpenConns(2000)
+	return db
 }
 
-func (q *MysqlQuery) Exec(newOrm bool, query string, args ...interface{}) (s sql.Result, err error) {
-	db, err := orm.GetDB("master")
-	if err != nil {
-		return
-	}
-	defer db.Close()
+func SetMasterConns(idle, open int) {
+	MasterDB.SetMaxIdleConns(idle)
+	MasterDB.SetMaxOpenConns(open)
+}
 
+func SetSlaveConns(idle, open int) {
+	SlaveDb.SetMaxIdleConns(idle)
+	SlaveDb.SetMaxOpenConns(open)
+}
+
+func (q *MysqlQuery) Exec(newOrm bool, query string, args ...interface{}) (sql.Result, error) {
+	db := SlaveDb
+	if newOrm {
+		db = ConnectMysql(false)
+		defer db.Close()
+	}
 	dbmodel := beedb.New(db)
 	return dbmodel.Exec(query, args...)
 }
 
-func (q *MysqlQuery) FindOne(result interface{}) error {
-	db, err := orm.GetDB("slave")
-	if err != nil {
-		return err
+func (q *MysqlQuery) FindOne(result interface{}, newOrm bool) error {
+	db := SlaveDb
+	if newOrm {
+		db = ConnectMysql(false)
+		defer db.Close()
 	}
-	defer db.Close()
 
 	dbmodel := beedb.New(db)
 	if q.Fields == "" {
@@ -85,12 +99,12 @@ func (q *MysqlQuery) FindOne(result interface{}) error {
 	return dbmodel.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).Find(result)
 }
 
-func (q *MysqlQuery) FindAll(result interface{}) error {
-	db, err := orm.GetDB("slave")
-	if err != nil {
-		return err
+func (q *MysqlQuery) FindAll(result interface{}, newOrm bool) error {
+	db := SlaveDb
+	if newOrm {
+		db = ConnectMysql(false)
+		defer db.Close()
 	}
-	defer db.Close()
 
 	dbmodel := beedb.New(db)
 	if q.Fields == "" {
@@ -99,24 +113,23 @@ func (q *MysqlQuery) FindAll(result interface{}) error {
 	return dbmodel.SetTable(q.Table).Where(q.Where).OrderBy(q.OrderBy).Limit(q.Size, q.Offset).Select(q.Fields).FindAll(result)
 }
 
-func (q *MysqlQuery) Upsert(data interface{}) error {
-	db, err := orm.GetDB("master")
-	if err != nil {
-		return err
+func (q *MysqlQuery) Upsert(data interface{}, newOrm bool) error {
+	db := MasterDB
+	if newOrm {
+		db = ConnectMysql(true)
+		defer db.Close()
 	}
-	defer db.Close()
 
 	dbmodel := beedb.New(db)
 	return dbmodel.SetTable(q.Table).Save(data)
 }
 
-func (q *MysqlQuery) Delete() (int64, error) {
-	db, err := orm.GetDB("master")
-	if err != nil {
-		return 0, err
+func (q *MysqlQuery) Delete(newOrm bool) (int64, error) {
+	db := MasterDB
+	if newOrm {
+		db = ConnectMysql(true)
+		defer db.Close()
 	}
-	defer db.Close()
-
 	dbmodel := beedb.New(db)
 	return dbmodel.SetTable(q.Table).Where(q.Where).DeleteRow()
 }
