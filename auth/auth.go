@@ -3,12 +3,13 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/pquerna/ffjson/ffjson"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/pquerna/ffjson/ffjson"
 )
 
 type AuthClient struct {
@@ -18,13 +19,13 @@ type AuthClient struct {
 }
 
 type TokenMid struct {
-	Aeris string `json:"aeris"`
-	Exp   string `json:"exp"`
+	Com string `json:"com"`
+	Exp string `json:"exp"`
 }
 
 type TokenData struct {
-	Aeris string `json:"aeris"`
-	Exp   string `json:"exp"`
+	Com string `json:"com"`
+	Exp string `json:"exp"`
 }
 
 func GetAccessToken(auth string) (token string, err error) {
@@ -57,9 +58,9 @@ func GetUsername(authorization string) (username, token string, err error) {
 		return
 	}
 
-	dataSp = strings.Split(data.Aeris, "+")
+	dataSp = strings.Split(data.Com, "%-%-%")
 	if len(dataSp) != 2 {
-		err = errors.New("username errror.")
+		err = errors.New("username error.")
 		return
 	}
 
@@ -116,8 +117,8 @@ func (this *AuthClient) Key(l int) []byte {
 func (this *AuthClient) Produce() (token string, key []byte, err error) {
 
 	jwtObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp":   time.Now().Add(this.ExpDay),
-		"aeris": strconv.Itoa(int(time.Now().UnixNano())) + this.Username,
+		"exp": time.Now().Add(this.ExpDay),
+		"com": strconv.Itoa(int(time.Now().UnixNano())) + "%-%-%" + this.Username,
 	})
 
 	key = this.Key(16)
