@@ -125,3 +125,19 @@ func (this *AuthClient) Produce() (token string, key []byte, err error) {
 	token, err = jwtObj.SignedString(key)
 	return
 }
+
+/* token struct */
+
+type TokenStruct struct {
+	Token string `json:"token"`
+	Key   string `json:"key"`
+	Email string `json:"email"`
+}
+
+func (t *TokenStruct) Parse(str string) error {
+	return ffjson.Unmarshal([]byte(str), &t)
+}
+
+func (t *TokenStruct) Stringify() ([]byte, error) {
+	return ffjson.Marshal(t)
+}
