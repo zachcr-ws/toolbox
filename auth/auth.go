@@ -64,7 +64,7 @@ func GetUsername(authorization string) (username, token string, err error) {
 		return
 	}
 
-	username = "+" + dataSp[1]
+	username = dataSp[1]
 	return
 }
 
