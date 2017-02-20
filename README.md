@@ -21,6 +21,6 @@ Time tools
 
 Common func/tools
 
-### response.go
+### Resp
 
-Response struct.
+Response tools
