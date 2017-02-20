@@ -1,4 +1,4 @@
-package common
+package toolbox
 
 type Head struct {
 	Code int    `json:"code"`

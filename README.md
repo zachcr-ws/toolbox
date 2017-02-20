@@ -1,14 +1,26 @@
-# Common (Golang)
+# Toolbox (Golang)
+`A toolbox for golang...`
 
+### Auth
+
+Auth tools
 
 ### Code
 
-md5, string encode/decode
+Code tools: md5, string encode/decode
 
-### mysql
+### db
 
-mysql client 
+Db tools: MySQL, Redis, MongoDB
 
-### parse
+### time
 
-time parse
+Time tools
+
+### Common
+
+Common func/tools
+
+### response.go
+
+Response struct.

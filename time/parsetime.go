@@ -1,4 +1,4 @@
-package parse
+package time
 
 import (
 	"time"
