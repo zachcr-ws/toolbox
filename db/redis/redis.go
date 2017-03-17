@@ -15,7 +15,7 @@ type RedisClient struct {
 	redisPool *redis.Pool
 }
 
-func NewRedisPool(addr string, speed int) RedisClient {
+func NewRedisPool(addr string, speed int) {
 	r := &redis.Pool{
 		MaxIdle:     speed,
 		IdleTimeout: 240 * time.Second,
@@ -35,9 +35,7 @@ func NewRedisPool(addr string, speed int) RedisClient {
 			return err
 		},
 	}
-	return RedisClient{
-		redisPool: r,
-	}
+	RClient = RedisClient{redisPool: r}
 }
 
 func (r *RedisClient) GetString(key string) (string, error) {
