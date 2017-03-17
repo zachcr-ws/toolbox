@@ -2,10 +2,11 @@ package redis
 
 import (
 	"errors"
-	"github.com/ZachBergh/toolbox/code"
-	"github.com/garyburd/redigo/redis"
 	"log"
 	"time"
+
+	"github.com/ZachBergh/toolbox/code"
+	"github.com/garyburd/redigo/redis"
 )
 
 var RClient RedisClient
@@ -14,7 +15,7 @@ type RedisClient struct {
 	redisPool *redis.Pool
 }
 
-func newRedisPool(addr string, speed int) RedisClient {
+func NewRedisPool(addr string, speed int) RedisClient {
 	r := &redis.Pool{
 		MaxIdle:     speed,
 		IdleTimeout: 240 * time.Second,
