@@ -166,6 +166,30 @@ func (r *RedisClient) HDelDir(dir, key string) error {
 	return nil
 }
 
+func (r *RedisClient) HGetAll(key string) (interface{}, error) {
+
+	var body interface{}
+
+	rc := r.redisPool.Get()
+	defer rc.Close()
+
+	exist := r.redisCheckKeyExists(key)
+	if !exist {
+		return body, errors.New("Key isn't exist")
+	}
+
+	body, err := rc.Do("HGETALL", key)
+	if err != nil {
+		return body, err
+	}
+
+	if body == nil {
+		err = errors.New("Null")
+	}
+
+	return body, err
+}
+
 func (r *RedisClient) redisCheckKeyExists(key string) bool {
 	conn := r.redisPool.Get()
 	defer conn.Close()
