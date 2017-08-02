@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/ZachBergh/toolbox/code"
 	"github.com/garyburd/redigo/redis"
+	"github.com/zachzhi/toolbox/code"
 )
 
 var RClient RedisClient
