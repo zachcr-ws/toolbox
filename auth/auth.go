@@ -129,9 +129,10 @@ func (this *AuthClient) Produce() (token string, key []byte, err error) {
 /* token struct */
 
 type TokenStruct struct {
-	Token string `json:"token"`
-	Key   string `json:"key"`
-	Email string `json:"email"`
+	Token      string   `json:"token"`
+	Key        string   `json:"key"`
+	Name       string   `json:"name"`
+	Additional []string `json:"additional"`
 }
 
 func (t *TokenStruct) Parse(str string) error {
